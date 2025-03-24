@@ -9,4 +9,3 @@ motor
 scikit-learn
 google-api-python-client
 pandas
-email
