@@ -35,7 +35,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "https://dynamic-pricing-engine-frntd.onrender.com"  # Add your deployed frontend URL
+        "https://luxeresorts.onrender.com"  # Add your deployed frontend URL
     ],
     allow_credentials=True,
     allow_methods=["*"],
