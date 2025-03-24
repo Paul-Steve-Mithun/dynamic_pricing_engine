@@ -49,19 +49,19 @@ const HotelManagementSystem = () => {
   const fetchAllData = async (checkIn, checkOut) => {
     try {
       const [roomsResponse, pricingResponse, nextDatesResponse] = await Promise.all([
-        axios.get('http://localhost:8000/api/rooms', {
+        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/rooms', {
           params: {
             check_in: checkIn,
             check_out: checkOut
           }
         }),
-        axios.get('http://localhost:8000/api/dynamic-pricing', {
+        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/dynamic-pricing', {
           params: { 
             check_in: checkIn, 
             check_out: checkOut 
           }
         }),
-        axios.get('http://localhost:8000/api/next-available-dates')
+        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/next-available-dates')
       ]);
 
       // Process rooms data

@@ -32,7 +32,11 @@ app = FastAPI(title="Hotel Dynamic Pricing API")
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://dynamic-pricing-engine-frntd.onrender.com"  # Add your deployed frontend URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -231,6 +235,23 @@ def fancy_round(price):
         return base + 99
     else:
         return (base - 100) + 99
+
+@app.get("/")
+async def root():
+    """Root endpoint that provides API information"""
+    return {
+        "message": "Welcome to Hotel Dynamic Pricing API",
+        "version": "1.0",
+        "endpoints": {
+            "rooms": "/api/rooms",
+            "dynamic_pricing": "/api/dynamic-pricing",
+            "bookings": "/api/bookings",
+            "room_stats": "/api/room-stats",
+            "next_available_dates": "/api/next-available-dates"
+        },
+        "documentation": "/docs",  # FastAPI auto-generated Swagger docs
+        "status": "online"
+    }
 
 @app.get("/api/rooms", response_model=List[dict])
 async def get_rooms(
