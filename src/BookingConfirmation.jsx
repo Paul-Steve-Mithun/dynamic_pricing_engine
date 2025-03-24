@@ -38,7 +38,7 @@ const BookingConfirmation = () => {
       
       try {
         setUpdatingPrice(true);
-        const response = await axios.get('http://localhost:8000/api/dynamic-pricing', {
+        const response = await axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/dynamic-pricing', {
           params: {
             check_in: formData.checkIn,
             check_out: formData.checkOut
@@ -111,7 +111,7 @@ const BookingConfirmation = () => {
       };
       
       // Send booking data to backend
-      const response = await axios.post('http://localhost:8000/api/bookings', bookingData);
+      const response = await axios.post('https://dynamic-pricing-engine-bknd.onrender.com/api/bookings', bookingData);
       
       // Set booking ID and show success
       setBookingId(response.data.id);
