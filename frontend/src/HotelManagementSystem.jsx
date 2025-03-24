@@ -48,6 +48,11 @@ const HotelManagementSystem = () => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const slideInStyles = {
+    transform: 'translateX(-100%)',
+    transition: 'transform 0.3s ease-in-out'
+  };
+
   const fetchAllData = async (checkIn, checkOut) => {
     try {
       const [roomsResponse, pricingResponse, nextDatesResponse] = await Promise.all([
@@ -349,7 +354,7 @@ const HotelManagementSystem = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
           </div>
           
-          <nav className="relative z-10 px-4 md:px-6 py-4 backdrop-blur-md bg-white/10">
+          <nav className="relative z-50 px-4 md:px-6 py-4 bg-gray-800">
             <div className="max-w-7xl mx-auto">
               <div className="flex justify-between items-center">
                 {/* Logo - make text responsive */}
@@ -362,23 +367,38 @@ const HotelManagementSystem = () => {
 
                 {/* Desktop Navigation - hide on mobile */}
                 <div className="hidden md:flex items-center space-x-1">
-                  <a href="#" className="px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                  <a href="#" className="flex items-center px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
                     Home
                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                   </a>
-                  <a href="#rooms" className="px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                  <a href="#rooms" className="flex items-center px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
                     Rooms
                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                   </a>
-                  <a href="#" className="px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                  <a href="#" className="flex items-center px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
                     Amenities
                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                   </a>
-                  <a href="#" className="px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                  <a href="#" className="flex items-center px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                     Gallery
                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                   </a>
-                  <a href="#" className="px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                  <a href="#" className="flex items-center px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
                     Contact
                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                   </a>
@@ -401,16 +421,65 @@ const HotelManagementSystem = () => {
               </div>
 
               {/* Mobile Navigation Menu */}
-              {isMobileMenuOpen && (
-                <div className="md:hidden absolute top-full left-0 right-0 bg-gray-800 bg-opacity-95 backdrop-blur-md">
-                  <div className="px-4 pt-2 pb-3 space-y-1">
-                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Home</a>
-                    <a href="#rooms" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Rooms</a>
-                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Amenities</a>
-                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Gallery</a>
-                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Contact</a>
+              <div 
+                className={`fixed top-0 left-0 h-full w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out z-[60] ${
+                  isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+              >
+                <div className="flex justify-between items-center p-4 border-b border-gray-200 bg-white">
+                  <div className="text-gray-900 font-serif text-xl tracking-wider">
+                    <span className="font-bold bg-gradient-to-r from-blue-400 to-indigo-500 text-transparent bg-clip-text">LUXE</span>
+                    <span className="ml-2 text-gray-800">HOTEL</span>
                   </div>
+                  <button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
+                <div className="py-4 bg-white h-full">
+                  <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    Home
+                  </a>
+                  <a href="#rooms" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    Rooms
+                  </a>
+                  <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    Amenities
+                  </a>
+                  <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Gallery
+                  </a>
+                  <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                    <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Contact
+                  </a>
+                </div>
+              </div>
+
+              {/* Overlay when mobile menu is open */}
+              {isMobileMenuOpen && (
+                <div 
+                  className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[55]"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                ></div>
               )}
             </div>
           </nav>
