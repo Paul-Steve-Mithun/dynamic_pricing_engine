@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+httpx
+numpy
+joblib
+motor
+scikit-learn
+google-api-python-client
+pandas
+smtplib
+email
