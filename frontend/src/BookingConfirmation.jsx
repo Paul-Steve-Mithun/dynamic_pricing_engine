@@ -158,8 +158,8 @@ const BookingConfirmation = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Complete Your Booking</h1>
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Complete Your Booking</h1>
           <button 
             onClick={() => navigate('/')}
             className="text-blue-600 hover:text-blue-800"
@@ -173,7 +173,7 @@ const BookingConfirmation = () => {
         {bookingComplete ? (
           <div className="bg-white shadow-lg rounded-xl overflow-hidden">
             {/* Success Banner */}
-            <div className="px-6 py-8 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
+            <div className="px-4 sm:px-6 py-8 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-gray-100">
               <div className="max-w-3xl mx-auto text-center">
                 <div className="flex justify-center mb-4">
                   <div className="rounded-full bg-green-100 p-3">
@@ -189,7 +189,7 @@ const BookingConfirmation = () => {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-5xl mx-auto px-4 py-8">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
               {/* Booking Timeline */}
               <div className="mb-12">
                 <div className="relative">
@@ -373,10 +373,10 @@ const BookingConfirmation = () => {
               </div>
 
               {/* Actions */}
-              <div className="mt-8 flex justify-center space-x-4">
+              <div className="mt-8 flex flex-col sm:flex-row justify-center space-y-3 sm:space-y-0 sm:space-x-4">
                 <button
                   onClick={() => window.print()}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <svg className="h-5 w-5 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -385,7 +385,7 @@ const BookingConfirmation = () => {
                 </button>
                 <button
                   onClick={() => navigate('/')}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -399,7 +399,7 @@ const BookingConfirmation = () => {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Booking Summary */}
             <div className="lg:col-span-1">
-              <div className="bg-white shadow overflow-hidden sm:rounded-lg sticky top-6">
+              <div className="bg-white shadow overflow-hidden sm:rounded-lg lg:sticky lg:top-6">
                 <div className="px-4 py-5 sm:px-6 bg-gray-50">
                   <h3 className="text-lg leading-6 font-medium text-gray-900">Booking Summary</h3>
                 </div>
@@ -479,8 +479,8 @@ const BookingConfirmation = () => {
             
             {/* Guest Information Form */}
             <div className="lg:col-span-2">
-              <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-xl overflow-hidden transition-all duration-300 hover:shadow-xl">
-                <div className="px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+              <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-xl overflow-hidden">
+                <div className="px-4 sm:px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50">
                   <h3 className="text-xl font-semibold text-gray-900">Guest Information</h3>
                   <p className="mt-2 text-sm text-gray-600">Please provide your details to complete the booking.</p>
                 </div>
@@ -491,10 +491,13 @@ const BookingConfirmation = () => {
                   </div>
                 )}
                 
-                <div className="px-6 py-6 space-y-6">
-                  <div className="grid grid-cols-6 gap-6">
-                    <div className="col-span-6">
-                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <div className="px-4 sm:px-6 py-6 space-y-6">
+                  <div className="grid grid-cols-1 gap-4 sm:gap-6">
+                    {/* Full Name field */}
+                    <div className="w-full">
+                      <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                        Full Name
+                      </label>
                       <input
                         type="text"
                         name="fullName"
@@ -502,41 +505,51 @@ const BookingConfirmation = () => {
                         value={personalInfo.fullName}
                         onChange={handleInputChange}
                         required
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+                        className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter your full name"
                       />
                     </div>
                     
-                    <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                      <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        value={personalInfo.email}
-                        onChange={handleInputChange}
-                        required
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
-                        placeholder="your.email@example.com"
-                      />
+                    {/* Email and Phone container */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                      <div className="w-full">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          id="email"
+                          value={personalInfo.email}
+                          onChange={handleInputChange}
+                          required
+                          className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="your.email@example.com"
+                        />
+                      </div>
+                      
+                      <div className="w-full">
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          id="phone"
+                          value={personalInfo.phone}
+                          onChange={handleInputChange}
+                          required
+                          className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="+1 (555) 000-0000"
+                        />
+                      </div>
                     </div>
-                    
-                    <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        id="phone"
-                        value={personalInfo.phone}
-                        onChange={handleInputChange}
-                        required
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
-                        placeholder="+1 (555) 000-0000"
-                      />
-                    </div>
-                    
-                    <div className="col-span-6">
-                      <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+
+                    {/* Address field */}
+                    <div className="w-full">
+                      <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                        Address
+                      </label>
                       <input
                         type="text"
                         name="address"
@@ -544,78 +557,92 @@ const BookingConfirmation = () => {
                         value={personalInfo.address}
                         onChange={handleInputChange}
                         required
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
+                        className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter your street address"
                       />
                     </div>
-                    
-                    <div className="col-span-6 sm:col-span-2">
-                      <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                      <input
-                        type="text"
-                        name="city"
-                        id="city"
-                        value={personalInfo.city}
-                        onChange={handleInputChange}
-                        required
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
-                        placeholder="Enter city"
-                      />
+
+                    {/* City, Country, ZIP container */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                      <div className="w-full">
+                        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                          City
+                        </label>
+                        <input
+                          type="text"
+                          name="city"
+                          id="city"
+                          value={personalInfo.city}
+                          onChange={handleInputChange}
+                          required
+                          className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter city"
+                        />
+                      </div>
+                      
+                      <div className="w-full">
+                        <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          name="country"
+                          id="country"
+                          value={personalInfo.country}
+                          onChange={handleInputChange}
+                          required
+                          className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter country"
+                        />
+                      </div>
+                      
+                      <div className="w-full">
+                        <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">
+                          ZIP / Postal Code
+                        </label>
+                        <input
+                          type="text"
+                          name="zipCode"
+                          id="zipCode"
+                          value={personalInfo.zipCode}
+                          onChange={handleInputChange}
+                          required
+                          className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Enter ZIP code"
+                        />
+                      </div>
                     </div>
-                    
-                    <div className="col-span-6 sm:col-span-2">
-                      <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">Country</label>
-                      <input
-                        type="text"
-                        name="country"
-                        id="country"
-                        value={personalInfo.country}
-                        onChange={handleInputChange}
-                        required
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
-                        placeholder="Enter country"
-                      />
-                    </div>
-                    
-                    <div className="col-span-6 sm:col-span-2">
-                      <label htmlFor="zipCode" className="block text-sm font-medium text-gray-700 mb-1">ZIP / Postal Code</label>
-                      <input
-                        type="text"
-                        name="zipCode"
-                        id="zipCode"
-                        value={personalInfo.zipCode}
-                        onChange={handleInputChange}
-                        required
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
-                        placeholder="Enter ZIP code"
-                      />
-                    </div>
-                    
-                    <div className="col-span-6">
-                      <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-1">Special Requests</label>
+
+                    {/* Special Requests field */}
+                    <div className="w-full">
+                      <label htmlFor="specialRequests" className="block text-sm font-medium text-gray-700 mb-1">
+                        Special Requests
+                      </label>
                       <textarea
                         name="specialRequests"
                         id="specialRequests"
                         rows="4"
                         value={personalInfo.specialRequests}
                         onChange={handleInputChange}
-                        className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out resize-none"
+                        className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Let us know if you have any special requests..."
                       ></textarea>
-                      <p className="mt-2 text-sm text-gray-500 italic">We'll do our best to accommodate your requests, but they cannot be guaranteed.</p>
+                      <p className="mt-2 text-sm text-gray-500 italic">
+                        We'll do our best to accommodate your requests, but they cannot be guaranteed.
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <div className="px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50">
+                <div className="px-4 sm:px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50">
                   <h3 className="text-xl font-semibold text-gray-900">Payment Information</h3>
                 </div>
                 
-                <div className="px-6 py-6 space-y-6">
+                <div className="px-4 sm:px-6 py-6 space-y-6">
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-3">Payment Method</label>
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div className="relative">
                           <input
                             id="credit_card"
@@ -755,12 +782,12 @@ const BookingConfirmation = () => {
                   </div>
                 </div>
                 
-                <div className="px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">All transactions are secure and encrypted</p>
+                <div className="px-4 sm:px-6 py-6 bg-gradient-to-r from-blue-50 to-indigo-50 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+                  <p className="text-sm text-gray-600 order-2 sm:order-1">All transactions are secure and encrypted</p>
                   <button
                     type="submit"
                     disabled={loading || updatingPrice}
-                    className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors duration-200"
+                    className="w-full sm:w-auto order-1 sm:order-2 inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors duration-200"
                   >
                     {loading ? (
                       <>

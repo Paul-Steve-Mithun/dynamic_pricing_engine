@@ -46,6 +46,8 @@ const HotelManagementSystem = () => {
 
   const [roomsLoading, setRoomsLoading] = useState(true);
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const fetchAllData = async (checkIn, checkOut) => {
     try {
       const [roomsResponse, pricingResponse, nextDatesResponse] = await Promise.all([
@@ -337,7 +339,7 @@ const HotelManagementSystem = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <main className="flex-grow">
-        <div className="relative h-[100vh]">
+        <div className="relative h-[60vh] md:h-[100vh]">
           <div className="absolute inset-0 overflow-hidden">
             <img 
               src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
@@ -347,18 +349,18 @@ const HotelManagementSystem = () => {
             <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
           </div>
           
-          <nav className="relative z-10 px-6 py-4 backdrop-blur-md bg-white/10">
+          <nav className="relative z-10 px-4 md:px-6 py-4 backdrop-blur-md bg-white/10">
             <div className="max-w-7xl mx-auto">
               <div className="flex justify-between items-center">
-                {/* Logo and Brand */}
+                {/* Logo - make text responsive */}
                 <div className="flex items-center space-x-2">
-                  <div className="text-white font-serif text-2xl tracking-wider flex items-center">
-                    <span className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 text-transparent bg-clip-text">LUXE</span>
-                    <span className="ml-2 text-xl text-white/90">HOTEL</span>
+                  <div className="text-white font-serif text-xl md:text-2xl tracking-wider flex items-center">
+                    <span className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 text-transparent bg-clip-text">LUXE</span>
+                    <span className="ml-2 text-lg md:text-xl text-white/90">HOTEL</span>
                   </div>
                 </div>
 
-                {/* Desktop Navigation */}
+                {/* Desktop Navigation - hide on mobile */}
                 <div className="hidden md:flex items-center space-x-1">
                   <a href="#" className="px-4 py-2 text-white/90 hover:text-white transition-colors duration-200 relative group">
                     Home
@@ -382,14 +384,15 @@ const HotelManagementSystem = () => {
                   </a>
                 </div>
 
-                {/* Book Now Button */}
-                <div className="flex items-center space-x-4">
-                  <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2.5 rounded-full hover:shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-transparent">
+                {/* Mobile Navigation Button and Book Now */}
+                <div className="flex items-center space-x-2 md:space-x-4">
+                  <button className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 md:px-6 py-2 md:py-2.5 rounded-full text-sm md:text-base hover:shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-200">
                     Book Now
                   </button>
-                  
-                  {/* Mobile Menu Button */}
-                  <button className="md:hidden text-white hover:text-blue-400 transition-colors duration-200">
+                  <button 
+                    className="md:hidden text-white p-2"
+                    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -397,34 +400,38 @@ const HotelManagementSystem = () => {
                 </div>
               </div>
 
-              {/* Mobile Navigation Menu - Hidden by default */}
-              <div className="md:hidden">
-                <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 hidden">
-                  <a href="#" className="block px-3 py-2 text-white/90 hover:text-white transition-colors duration-200">Home</a>
-                  <a href="#rooms" className="block px-3 py-2 text-white/90 hover:text-white transition-colors duration-200">Rooms</a>
-                  <a href="#" className="block px-3 py-2 text-white/90 hover:text-white transition-colors duration-200">Amenities</a>
-                  <a href="#" className="block px-3 py-2 text-white/90 hover:text-white transition-colors duration-200">Gallery</a>
-                  <a href="#" className="block px-3 py-2 text-white/90 hover:text-white transition-colors duration-200">Contact</a>
+              {/* Mobile Navigation Menu */}
+              {isMobileMenuOpen && (
+                <div className="md:hidden absolute top-full left-0 right-0 bg-gray-800 bg-opacity-95 backdrop-blur-md">
+                  <div className="px-4 pt-2 pb-3 space-y-1">
+                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Home</a>
+                    <a href="#rooms" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Rooms</a>
+                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Amenities</a>
+                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Gallery</a>
+                    <a href="#" className="block px-3 py-2 text-white hover:bg-gray-700 rounded-md">Contact</a>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </nav>
           
+          {/* Update hero content text sizes */}
           <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4">
-            <h1 className="text-5xl md:text-7xl font-bold text-white mb-4 font-serif">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-4 font-serif">
               Experience Luxury <span className="text-blue-400">Redefined</span>
             </h1>
-            <p className="text-xl text-gray-200 max-w-3xl mb-8">
+            <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-3xl mb-8">
               Discover the perfect blend of comfort and elegance with our dynamic pricing system that ensures you always get the best value.
             </p>
           </div>
         </div>
 
-        <div className="relative z-20 -mt-24 mx-auto max-w-5xl px-4">
+        {/* Update search form container */}
+        <div className="relative z-20 -mt-12 md:-mt-24 mx-auto max-w-5xl px-4">
           <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">Find Your Perfect Stay</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="p-4 md:p-8">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6">Find Your Perfect Stay</h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
                 <div>
                   <label htmlFor="checkIn" className="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
                   <input
@@ -516,17 +523,16 @@ const HotelManagementSystem = () => {
           </div>
         </div>
 
-        <div className="h-24"></div>
-
+        {/* Update recommended room section */}
         {recommendedRoom && (
-          <div className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div className="py-8 md:py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Recommended for You</h2>
-              <p className="text-gray-600 mb-8">Based on your search, we recommend this room for the best value.</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Recommended for You</h2>
+              <p className="text-gray-600 mb-6 md:mb-8">Based on your search, we recommend this room for the best value.</p>
               
               <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="md:flex">
-                  <div className="md:flex-shrink-0 md:w-1/3 relative">
+                <div className="flex flex-col md:flex-row">
+                  <div className="w-full md:w-1/3 h-64 md:h-auto relative">
                     <img 
                       src={recommendedRoom.image_url} 
                       alt={recommendedRoom.type} 
@@ -543,10 +549,10 @@ const HotelManagementSystem = () => {
                       </div>
                     )}
                   </div>
-                  <div className="p-8 md:w-2/3">
-                    <div className="flex justify-between items-start">
+                  <div className="p-4 md:p-8 w-full md:w-2/3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
                       <div>
-                        <h3 className="text-2xl font-bold text-gray-900">{recommendedRoom.type}</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900">{recommendedRoom.type}</h3>
                         <div className="mt-1 flex items-center">
                           {Array(5).fill().map((_, i) => {
                             const rating = Math.min(5, 3.5 + ((recommendedRoom.id || 1) * 0.3));
@@ -563,27 +569,29 @@ const HotelManagementSystem = () => {
                       </div>
                       <div className="text-right">
                         <div className="text-gray-500 line-through text-sm">₹{recommendedRoom.basePrice}</div>
-                        <div className="text-2xl font-bold text-blue-600">
+                        <div className="text-lg md:text-2xl font-bold text-blue-600">
                           ₹{recommendedRoom.currentPrice} {getPriceDiffDisplay(recommendedRoom.currentPrice, recommendedRoom.basePrice)}
                         </div>
                         {getPricingExplanation(recommendedRoom.priceFactors)}
                       </div>
                     </div>
                     
-                    <p className="mt-4 text-gray-600">{recommendedRoom.description}</p>
+                    <p className="text-gray-600 mb-4">{recommendedRoom.description}</p>
                     
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium text-gray-900">Amenities:</h4>
-                      <div className="mt-2 flex flex-wrap gap-2">
+                    {/* Update amenities display */}
+                    <div className="mb-4">
+                      <h4 className="text-sm font-medium text-gray-900 mb-2">Amenities:</h4>
+                      <div className="flex flex-wrap gap-1 md:gap-2">
                         {recommendedRoom.amenities.map((amenity, index) => (
-                          <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             {amenity}
                           </span>
                         ))}
                       </div>
                     </div>
                     
-                    <div className="mt-8 flex justify-between items-center">
+                    {/* Update booking section */}
+                    <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
                       <span className="text-sm text-gray-500">
                         {recommendedRoom.available} {recommendedRoom.available === 1 ? 'room' : 'rooms'} left
                       </span>
@@ -601,18 +609,20 @@ const HotelManagementSystem = () => {
           </div>
         )}
         
-        <div id="rooms" className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">Available Rooms</h2>
+        {/* Update available rooms grid */}
+        <div id="rooms" className="max-w-7xl mx-auto px-4 py-8 md:py-16 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Available Rooms</h2>
           
           {roomsLoading ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 md:gap-8 md:grid-cols-2 lg:grid-cols-3">
               {(searchPerformed ? filteredRooms : rooms).map((room) => (
                 <div key={room.id} className="bg-white rounded-xl shadow-lg overflow-hidden transition-transform hover:shadow-xl hover:-translate-y-1 flex flex-col">
-                  <div className="relative h-64">
+                  {/* Update room card content */}
+                  <div className="relative h-48 sm:h-64">
                     {loading ? (
                       <div className="absolute inset-0 bg-gray-100 animate-pulse" />
                     ) : (
@@ -641,8 +651,8 @@ const HotelManagementSystem = () => {
                       ₹{room.currentPrice}/night
                     </div>
                   </div>
-                  <div className="p-6 flex flex-col flex-grow">
-                    <div className="flex justify-between items-start mb-4">
+                  <div className="p-4 md:p-6 flex flex-col flex-grow">
+                    <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
                       <div>
                         <h3 className="text-xl font-bold text-gray-900">{room.type}</h3>
                         <div className="mt-1 flex items-center">
@@ -674,9 +684,10 @@ const HotelManagementSystem = () => {
                     
                     <p className="text-gray-600 mb-4">{room.description}</p>
                     
+                    {/* Update amenities display */}
                     <div className="mb-4">
                       <h4 className="text-sm font-medium text-gray-900 mb-2">Amenities:</h4>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1 md:gap-2">
                         {room.amenities.map((amenity, index) => (
                           <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             {amenity}
@@ -685,7 +696,8 @@ const HotelManagementSystem = () => {
                       </div>
                     </div>
                     
-                    <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                    {/* Update booking section */}
+                    <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
                       <div>
                         <RoomAvailabilityStatus room={room} />
                         {room.available === 0 && <NextAvailableDate roomId={room.id} />}
@@ -710,10 +722,10 @@ const HotelManagementSystem = () => {
         </div>
 
         {(isBookingModalOpen || isClosing) && selectedRoom && (
-          <div className={`fixed inset-0 flex items-center justify-center p-4 z-50 ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}>
+          <div className={`fixed inset-0 flex items-center justify-center p-2 md:p-4 z-50 ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}>
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"></div>
-            <div className={`bg-white rounded-lg shadow-lg max-w-md w-full relative z-10 ${isClosing ? 'animate-modalSlideOut' : 'animate-modalSlideIn'}`}>
-              <div className="p-6">
+            <div className={`bg-white rounded-lg shadow-lg w-full max-w-md mx-2 relative z-10 ${isClosing ? 'animate-modalSlideOut' : 'animate-modalSlideIn'}`}>
+              <div className="p-4 md:p-6">
                 {bookingSuccess ? (
                   <div className="text-center py-8">
                     <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
@@ -770,7 +782,7 @@ const HotelManagementSystem = () => {
                           required
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700">Check-in Date</label>
                           <input
@@ -863,9 +875,10 @@ const HotelManagementSystem = () => {
         )}
       </main>
 
+      {/* Update footer */}
       <footer className="bg-gray-800 text-white w-full">
-        <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <div>
               <h3 className="text-lg font-semibold mb-4">About Our Hotel</h3>
               <p className="text-gray-300">
@@ -880,30 +893,40 @@ const HotelManagementSystem = () => {
               <p className="text-gray-300">Email: info@luxuryhotel.com</p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
-              <div className="flex space-x-4">
-                <a href="#" className="text-gray-300 hover:text-white">
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                  </svg>
-                </a>
-                <a href="#" className="text-gray-300 hover:text-white">
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                  </svg>
-                </a> 
-                <a href="#" className="text-gray-300 hover:text-white">
-                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                  </svg>
-                </a>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-4">Follow Us</h3>
+                <div className="flex justify-center space-x-6">
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
+                    </svg>
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors duration-200">
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                    </svg>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
-          <div className="mt-8 border-t border-gray-700 pt-8 text-center">
-            <p className="text-sm text-gray-400">
-              &copy; {new Date().getFullYear()} Luxury Hotel. All rights reserved.
-            </p>
+          <div className="mt-8 border-t border-gray-700 pt-8">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="text-white font-serif text-xl tracking-wider flex items-center">
+                  <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 text-transparent bg-clip-text">LUXE</span>
+                  <span className="ml-2 text-white/90">HOTEL</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-400 text-center">
+                &copy; {new Date().getFullYear()} Luxury Hotel. All rights reserved.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
