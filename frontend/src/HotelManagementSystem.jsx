@@ -21,6 +21,7 @@ const HotelManagementSystem = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     guestName: '',
+    location: '',
     checkIn: format(new Date(), 'yyyy-MM-dd'),
     checkOut: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
     guests: 1,
@@ -59,22 +60,23 @@ const HotelManagementSystem = () => {
     dubai: true
   });
 
-  const fetchAllData = async (checkIn, checkOut) => {
+  const fetchAllData = async (checkIn, checkOut, location) => {
     try {
       const [roomsResponse, pricingResponse, nextDatesResponse] = await Promise.all([
-        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/rooms', {
+        axios.get('http://localhost:8000/api/rooms', {
           params: {
             check_in: checkIn,
-            check_out: checkOut
+            check_out: checkOut,
+            location: location
           }
         }),
-        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/dynamic-pricing', {
+        axios.get('http://localhost:8000/api/dynamic-pricing', {
           params: { 
             check_in: checkIn, 
             check_out: checkOut 
           }
         }),
-        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/next-available-dates')
+        axios.get('http://localhost:8000/api/next-available-dates')
       ]);
 
       // Process rooms data
@@ -91,7 +93,8 @@ const HotelManagementSystem = () => {
           amenities: room.amenities,
           description: room.description,
           image_url: room.image_url,
-          priceFactors: pricing ? pricing.price_factors : {}
+          priceFactors: pricing ? pricing.price_factors : {},
+          location: room.location
         };
       });
 
@@ -128,7 +131,7 @@ const HotelManagementSystem = () => {
   const loadInitialData = async () => {
     setRoomsLoading(true);
     try {
-      await fetchAllData(formData.checkIn, formData.checkOut);
+      await fetchAllData(formData.checkIn, formData.checkOut, formData.location);
     } finally {
       setRoomsLoading(false);
     }
@@ -136,17 +139,17 @@ const HotelManagementSystem = () => {
 
   useEffect(() => {
     loadInitialData();
-  }, [formData.checkIn, formData.checkOut]);
+  }, [formData.checkIn, formData.checkOut, formData.location]);
 
   useEffect(() => {
     if (!roomsLoading) {
       const intervalId = setInterval(() => {
-        fetchAllData(formData.checkIn, formData.checkOut);
+        fetchAllData(formData.checkIn, formData.checkOut, formData.location);
       }, 60000);
       
       return () => clearInterval(intervalId);
     }
-  }, [roomsLoading, formData.checkIn, formData.checkOut]);
+  }, [roomsLoading, formData.checkIn, formData.checkOut, formData.location]);
 
   useEffect(() => {
     if (rooms.length > 0) {
@@ -210,6 +213,10 @@ const HotelManagementSystem = () => {
   const handleSearch = async () => {
     try {
       const errors = {};
+      if (!formData.location) {
+        errors.location = 'Please select a location';
+      }
+      
       const checkInDate = new Date(formData.checkIn);
       const checkOutDate = new Date(formData.checkOut);
       const today = new Date();
@@ -229,7 +236,7 @@ const HotelManagementSystem = () => {
 
       setLoading(true);
       
-      // Navigate to rooms page with search parameters
+      // Navigate to rooms page with search parameters including location
       navigate('/rooms', {
         state: {
           searchParams: formData
@@ -244,7 +251,7 @@ const HotelManagementSystem = () => {
 
   const handleSubmitBooking = async () => {
     try {
-      const updatedRooms = await fetchAllData(formData.checkIn, formData.checkOut);
+      const updatedRooms = await fetchAllData(formData.checkIn, formData.checkOut, formData.location);
       const currentRoom = updatedRooms.find(r => r.id === selectedRoom.id);
       
       const checkIn = new Date(formData.checkIn);
@@ -441,13 +448,26 @@ const HotelManagementSystem = () => {
   `;
   document.head.appendChild(style);
 
+  const handleLocationClick = (selectedLocation) => {
+    navigate('/rooms', { 
+      state: { 
+        searchParams: {
+          checkIn: format(new Date(), 'yyyy-MM-dd'),
+          checkOut: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
+          guests: 1,
+          location: selectedLocation
+        }
+      }
+    });
+  };
+
   return (
     <div className="relative">
       {/* Hero Section */}
       <div className="h-[110vh] relative">
         <div className="absolute inset-0 overflow-hidden">
           <img 
-            src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
+            src="hotel.jpg" 
             alt="Luxury Hotel" 
             className="w-full h-full object-cover"
           />
@@ -469,7 +489,28 @@ const HotelManagementSystem = () => {
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
           <div className="p-4 md:p-8">
             <h2 className="text-3xl font-bold luxury-font text-gradient mb-4 md:mb-6">Find Your Perfect Stay</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5 md:gap-6">
+              {/* Location select */}
+              <div>
+                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <select
+                  id="location"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-blue-500 bg-white"
+                  required
+                >
+                  <option value="">Select Location</option>
+                  <option value="Madurai">Madurai</option>
+                  <option value="Hyderabad">Hyderabad</option>
+                  <option value="Bangalore">Bangalore</option>
+                </select>
+                {formErrors.location && (
+                  <p className="mt-1 text-sm text-red-600">{formErrors.location}</p>
+                )}
+              </div>
+
               {/* Check-in input */}
               <div>
                 <label htmlFor="checkIn" className="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
@@ -547,7 +588,7 @@ const HotelManagementSystem = () => {
             <div className="mt-6 flex justify-center">
               <button
                 onClick={handleSearch}
-                disabled={loading || formErrors.checkIn || formErrors.checkOut}
+                disabled={loading || formErrors.checkIn || formErrors.checkOut || !formData.location}
                 className="royal-button px-8 py-3 rounded-full text-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
               >
                 {loading ? (
@@ -583,7 +624,7 @@ const HotelManagementSystem = () => {
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl card-shine transform transition-all duration-300 hover:-translate-y-2">
               <div className="relative overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1571896349842-33c89424de2d" 
+                  src="spa.jpg" 
                   alt="Luxury Spa" 
                   className="h-72 w-full object-cover transform hover:scale-110 transition-transform duration-700"
                 />
@@ -594,16 +635,13 @@ const HotelManagementSystem = () => {
                 <p className="text-gray-600 modern-font leading-relaxed">
                   Rejuvenate your senses with our world-class spa treatments and wellness programs.
                 </p>
-                <button className="royal-button-outline mt-6 px-6 py-2 rounded-full text-sm font-medium">
-                  Learn More →
-                </button>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl card-shine transform transition-all duration-300 hover:-translate-y-2">
               <div className="relative overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0" 
+                  src="Dining.jpg" 
                   alt="Fine Dining" 
                   className="h-72 w-full object-cover transform hover:scale-110 transition-transform duration-700"
                 />
@@ -614,16 +652,13 @@ const HotelManagementSystem = () => {
                 <p className="text-gray-600 modern-font leading-relaxed">
                   Savor exquisite cuisines prepared by our award-winning chefs using the finest ingredients.
                 </p>
-                <button className="royal-button-outline mt-6 px-6 py-2 rounded-full text-sm font-medium">
-                  Learn More →
-                </button>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl card-shine transform transition-all duration-300 hover:-translate-y-2">
               <div className="relative overflow-hidden">
                 <img 
-                  src="https://images.unsplash.com/photo-1540541338287-41700207dee6" 
+                  src="event.jpg" 
                   alt="Event Spaces" 
                   className="h-72 w-full object-cover transform hover:scale-110 transition-transform duration-700"
                 />
@@ -634,11 +669,96 @@ const HotelManagementSystem = () => {
                 <p className="text-gray-600 modern-font leading-relaxed">
                   Perfect venues for your special occasions, meetings, and celebrations.
                 </p>
-                <button className="royal-button-outline mt-6 px-6 py-2 rounded-full text-sm font-medium">
-                  Learn More →
-                </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Corporate Discount Section */}
+      <div className="py-16 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-4xl md:text-5xl font-bold luxury-font text-gradient mb-6">
+              Corporate Group Discounts
+            </h2>
+            <p className="text-xl modern-font text-gray-600 max-w-3xl mx-auto">
+              Special rates for corporate groups and business travelers
+            </p>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Tier 1 */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
+              <div className="relative bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex-shrink-0 bg-blue-100 rounded-lg p-3">
+                    <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-3xl font-bold text-blue-600">15%</span>
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-gray-900">Small Groups</h3>
+                <p className="mt-2 text-gray-600">For groups of 3-5 members</p>
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <span className="text-sm text-gray-500">Perfect for small team meetings and events</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tier 2 */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
+              <div className="relative bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex-shrink-0 bg-indigo-100 rounded-lg p-3">
+                    <svg className="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <span className="text-3xl font-bold text-indigo-600">25%</span>
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-gray-900">Medium Groups</h3>
+                <p className="mt-2 text-gray-600">For groups of 5-10 members</p>
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <span className="text-sm text-gray-500">Ideal for corporate retreats and conferences</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tier 3 */}
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
+              <div className="relative bg-white p-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex-shrink-0 bg-purple-100 rounded-lg p-3">
+                    <svg className="h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <span className="text-3xl font-bold text-purple-600">30%</span>
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-gray-900">Large Groups</h3>
+                <p className="mt-2 text-gray-600">For groups of 10+ members</p>
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <span className="text-sm text-gray-500">Best value for large corporate events</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-10 text-center">
+            <p className="text-gray-600 modern-font">
+              Contact our corporate sales team for customized packages and additional benefits
+            </p>
+            <button
+              onClick={() => navigate('/rooms')}
+              className="royal-button mt-10 px-8 py-4 rounded-full text-lg modern-font font-medium"
+            >
+              Enquire Now
+            </button>
           </div>
         </div>
       </div>
@@ -660,7 +780,7 @@ const HotelManagementSystem = () => {
             <div className="w-full lg:w-1/2 lg:pr-12">
               <div className="relative h-[600px] rounded-3xl overflow-hidden group card-shine">
                 <img 
-                  src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220" 
+                  src="madurai.jpg" 
                   alt="Madurai Heritage" 
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000"
                 />
@@ -744,7 +864,7 @@ const HotelManagementSystem = () => {
             <div className="w-full lg:w-1/2">
               <div className="relative h-[600px] rounded-2xl overflow-hidden group">
                 <img 
-                  src="https://images.unsplash.com/photo-1615460549969-36fa19521a4f" 
+                  src="hyderabad.jpg" 
                   alt="Hyderabad Grandeur" 
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
                 />
@@ -758,7 +878,7 @@ const HotelManagementSystem = () => {
             <div className="w-full lg:w-1/2 lg:pr-12">
               <div className="relative h-[600px] rounded-3xl overflow-hidden group card-shine">
                 <img 
-                  src="https://images.unsplash.com/photo-1596176530529-78163a4f7af2" 
+                  src="bangalore.jpg" 
                   alt="Bangalore Tech Garden" 
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000"
                 />

@@ -147,10 +147,10 @@ function App() {
               </div>
               <div>
                 <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
-                <p className="text-gray-300">123 Luxury Avenue</p>
-                <p className="text-gray-300">New York, NY 10001</p>
-                <p className="text-gray-300">Phone: (123) 456-7890</p>
-                <p className="text-gray-300">Email: info@luxuryhotel.com</p>
+                <p className="text-gray-300">Luxury Avenue</p>
+                <p className="text-gray-300">Madurai, TN</p>
+                <p className="text-gray-300">Phone: +91 98421 71742</p>
+                <p className="text-gray-300">Email: resortsluxe@gmail.com</p>
               </div>
               <div>
                 <div className="text-center">

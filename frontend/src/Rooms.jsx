@@ -130,6 +130,33 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+const HOTEL_ADDRESSES = {
+  "Madurai": {
+    street: "45 West Masi Street",
+    area: "Near Meenakshi Temple",
+    city: "Madurai",
+    state: "Tamil Nadu",
+    pincode: "625001",
+    phone: "+91 452-2345-6789"
+  },
+  "Hyderabad": {
+    street: "8-2-120 Road No. 2",
+    area: "Banjara Hills",
+    city: "Hyderabad",
+    state: "Telangana",
+    pincode: "500034",
+    phone: "+91 40-6789-0123"
+  },
+  "Bangalore": {
+    street: "123 MG Road",
+    area: "Central Business District",
+    city: "Bangalore",
+    state: "Karnataka",
+    pincode: "560001",
+    phone: "+91 80-3456-7890"
+  }
+};
+
 const Rooms = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -137,7 +164,8 @@ const Rooms = () => {
     checkIn: format(new Date(), 'yyyy-MM-dd'),
     checkOut: format(addDays(new Date(), 1), 'yyyy-MM-dd'),
     guests: 1,
-    roomType: ''
+    roomType: '',
+    location: ''
   };
 
   // States
@@ -146,6 +174,7 @@ const Rooms = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [formData, setFormData] = useState({
     guestName: '',
+    location: '',
     ...searchParams
   });
   const [loading, setLoading] = useState(false);
@@ -162,16 +191,27 @@ const Rooms = () => {
   const [roomsLoading, setRoomsLoading] = useState(true);
 
   // Functions
-  const fetchAllData = async (checkIn, checkOut) => {
+  const fetchAllData = async (checkIn, checkOut, location) => {
     try {
+      const params = { 
+        check_in: checkIn, 
+        check_out: checkOut
+      };
+      
+      // Only add location to params if it's not empty
+      if (location && location.trim()) {
+        params.location = location;
+      }
+
       const [roomsResponse, pricingResponse, nextDatesResponse] = await Promise.all([
-        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/rooms', {
-          params: { check_in: checkIn, check_out: checkOut }
+        axios.get('http://localhost:8000/api/rooms', { params }),
+        axios.get('http://localhost:8000/api/dynamic-pricing', {
+          params: { 
+            check_in: checkIn, 
+            check_out: checkOut 
+          }
         }),
-        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/dynamic-pricing', {
-          params: { check_in: checkIn, check_out: checkOut }
-        }),
-        axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/next-available-dates')
+        axios.get('http://localhost:8000/api/next-available-dates')
       ]);
 
       // Process rooms data
@@ -188,7 +228,9 @@ const Rooms = () => {
           amenities: room.amenities,
           description: room.description,
           image_url: room.image_url,
-          priceFactors: pricing ? pricing.price_factors : {}
+          priceFactors: pricing ? pricing.price_factors : {},
+          location: room.location,
+          capacity: room.capacity
         };
       });
 
@@ -225,7 +267,7 @@ const Rooms = () => {
   const loadInitialData = async () => {
     setRoomsLoading(true);
     try {
-      await fetchAllData(formData.checkIn, formData.checkOut);
+      await fetchAllData(formData.checkIn, formData.checkOut, formData.location);
     } finally {
       setRoomsLoading(false);
     }
@@ -233,17 +275,17 @@ const Rooms = () => {
 
   useEffect(() => {
     loadInitialData();
-  }, [formData.checkIn, formData.checkOut]);
+  }, [formData.checkIn, formData.checkOut, formData.location]);
 
   useEffect(() => {
     if (!roomsLoading) {
       const intervalId = setInterval(() => {
-        fetchAllData(formData.checkIn, formData.checkOut);
+        fetchAllData(formData.checkIn, formData.checkOut, formData.location);
       }, 60000);
       
       return () => clearInterval(intervalId);
     }
-  }, [roomsLoading, formData.checkIn, formData.checkOut]);
+  }, [roomsLoading, formData.checkIn, formData.checkOut, formData.location]);
 
   useEffect(() => {
     if (rooms.length > 0) {
@@ -302,6 +344,10 @@ const Rooms = () => {
   const handleSearch = async () => {
     try {
       const errors = {};
+      if (!formData.location) {
+        errors.location = 'Please select a location';
+      }
+      
       const checkInDate = new Date(formData.checkIn);
       const checkOutDate = new Date(formData.checkOut);
       const today = new Date();
@@ -322,7 +368,7 @@ const Rooms = () => {
       setLoading(true);
       setSearchPerformed(true);
 
-      const updatedRooms = await fetchAllData(formData.checkIn, formData.checkOut);
+      const updatedRooms = await fetchAllData(formData.checkIn, formData.checkOut, formData.location);
       setFilteredRooms(updatedRooms);
     } catch (error) {
       alert('An error occurred while searching. Please try again.');
@@ -342,7 +388,7 @@ const Rooms = () => {
 
   const handleSubmitBooking = async () => {
     try {
-      const updatedRooms = await fetchAllData(formData.checkIn, formData.checkOut);
+      const updatedRooms = await fetchAllData(formData.checkIn, formData.checkOut, formData.location);
       const currentRoom = updatedRooms.find(r => r.id === selectedRoom.id);
       
       const checkIn = new Date(formData.checkIn);
@@ -355,7 +401,10 @@ const Rooms = () => {
       navigate('/booking-confirmation', {
         state: {
           room: currentRoom,
-          formData,
+          formData: {
+            ...formData,
+            location: currentRoom.location
+          },
           nights,
           totalPrice
         }
@@ -470,7 +519,25 @@ const Rooms = () => {
               <h2 className="text-3xl md:text-4xl font-bold luxury-font text-gradient mb-4 md:mb-6">
                 Find Your Perfect Stay
               </h2>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 md:gap-6">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5 md:gap-6">
+                {/* Location select */}
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <select
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer hover:border-blue-500 bg-white"
+                    required
+                  >
+                    <option value="">Select Location</option>
+                    <option value="Madurai">Madurai</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Bangalore">Bangalore</option>
+                  </select>
+                </div>
+
                 {/* Check-in input */}
                 <div>
                   <label htmlFor="checkIn" className="block text-sm font-medium text-gray-700 mb-2">Check-in Date</label>
@@ -548,7 +615,7 @@ const Rooms = () => {
               <div className="mt-6 flex justify-center">
                 <button
                   onClick={handleSearch}
-                  disabled={loading || formErrors.checkIn || formErrors.checkOut}
+                  disabled={loading || formErrors.checkIn || formErrors.checkOut || !formData.location}
                   className="royal-button px-8 py-3 rounded-full text-lg font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
                   {loading ? (
@@ -867,15 +934,19 @@ const Rooms = () => {
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Number of Guests</label>
+                      <label htmlFor="guests" className="block text-sm font-medium text-gray-700">
+                        Number of Guests
+                      </label>
                       <select
+                        id="guests"
                         name="guests"
                         value={formData.guests}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2 border"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        required
                       >
-                        {[1, 2, 3, 4].map(num => (
-                          <option key={num} value={num}>{num}</option>
+                        {Array.from({ length: selectedRoom.capacity }, (_, i) => (
+                          <option key={i + 1} value={i + 1}>{i + 1}</option>
                         ))}
                       </select>
                     </div>

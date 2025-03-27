@@ -3,10 +3,37 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { format } from 'date-fns';
 
+const HOTEL_ADDRESSES = {
+  "Madurai": {
+    street: "45 West Masi Street",
+    area: "Near Meenakshi Temple",
+    city: "Madurai",
+    state: "Tamil Nadu",
+    pincode: "625001",
+    phone: "+91 452-2345-6789"
+  },
+  "Hyderabad": {
+    street: "8-2-120 Road No. 2",
+    area: "Banjara Hills",
+    city: "Hyderabad",
+    state: "Telangana",
+    pincode: "500034",
+    phone: "+91 40-6789-0123"
+  },
+  "Bangalore": {
+    street: "123 MG Road",
+    area: "Central Business District",
+    city: "Bangalore",
+    state: "Karnataka",
+    pincode: "560001",
+    phone: "+91 80-3456-7890"
+  }
+};
+
 const BookingConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { room: initialRoom, formData, nights, totalPrice: initialTotalPrice } = location.state || {};
+  const { room: initialRoom, formData: initialFormData, nights, totalPrice: initialTotalPrice } = location.state || {};
   const [loading, setLoading] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
   const [bookingId, setBookingId] = useState('');
@@ -14,34 +41,25 @@ const BookingConfirmation = () => {
   const [room, setRoom] = useState(initialRoom);
   const [totalPrice, setTotalPrice] = useState(initialTotalPrice);
   const [updatingPrice, setUpdatingPrice] = useState(true);
+  const [numberOfRooms, setNumberOfRooms] = useState(1);
+  const [maxGuests, setMaxGuests] = useState(1);
   
-  const [personalInfo, setPersonalInfo] = useState({
-    fullName: formData?.guestName || '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    country: '',
-    zipCode: '',
-    specialRequests: '',
-    paymentMethod: 'credit_card',
-    cardNumber: '',
-    cardName: '',
-    expiryDate: '',
-    cvv: ''
+  const [formData, setFormData] = useState({
+    ...initialFormData,
+    guests: initialFormData?.guests || 1
   });
 
   // Fetch latest dynamic pricing when component mounts
   useEffect(() => {
     const fetchLatestPricing = async () => {
-      if (!formData || !initialRoom) return;
+      if (!initialFormData || !initialRoom) return;
       
       try {
         setUpdatingPrice(true);
         const response = await axios.get('https://dynamic-pricing-engine-bknd.onrender.com/api/dynamic-pricing', {
           params: {
-            check_in: formData.checkIn,
-            check_out: formData.checkOut
+            check_in: initialFormData.checkIn,
+            check_out: initialFormData.checkOut
           }
         });
         
@@ -73,11 +91,19 @@ const BookingConfirmation = () => {
     };
     
     fetchLatestPricing();
-  }, [formData, initialRoom, nights, initialTotalPrice]);
+  }, [initialFormData, initialRoom, nights, initialTotalPrice]);
+
+  // Update useEffect to handle initial maxGuests
+  useEffect(() => {
+    if (room && room.capacity) {
+      const totalCapacity = calculateTotalCapacity(numberOfRooms, room.capacity);
+      setMaxGuests(totalCapacity);
+    }
+  }, [room, numberOfRooms, room?.capacity]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setPersonalInfo(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
@@ -89,31 +115,33 @@ const BookingConfirmation = () => {
     setError('');
     
     try {
-      // Create booking data with the latest pricing
+      const subtotal = room.currentPrice * nights * numberOfRooms;
+      const discount = calculateCorporateDiscount(formData.guests);
+      const finalTotal = subtotal * (1 - discount);
+
       const bookingData = {
         room_id: room.id,
-        guest_name: personalInfo.fullName,
+        location: room.location,
+        guest_name: formData.guestName,
         check_in: formData.checkIn,
         check_out: formData.checkOut,
         guests: parseInt(formData.guests),
+        number_of_rooms: numberOfRooms,
         price_per_night: room.currentPrice,
-        total_price: totalPrice,
+        total_price: finalTotal,
         guest_details: {
-          email: personalInfo.email,
-          phone: personalInfo.phone,
-          address: personalInfo.address,
-          city: personalInfo.city,
-          country: personalInfo.country,
-          zip_code: personalInfo.zipCode,
-          special_requests: personalInfo.specialRequests,
-          payment_method: personalInfo.paymentMethod
+          email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          country: formData.country,
+          zip_code: formData.zipCode,
+          special_requests: formData.specialRequests,
+          payment_method: formData.paymentMethod
         }
       };
-      
-      // Send booking data to backend
-      const response = await axios.post('https://dynamic-pricing-engine-bknd.onrender.com/api/bookings', bookingData);
-      
-      // Set booking ID and show success
+
+      const response = await axios.post('http://localhost:8000/api/bookings', bookingData);
       setBookingId(response.data.id);
       setBookingComplete(true);
       setLoading(false);
@@ -136,8 +164,33 @@ const BookingConfirmation = () => {
     );
   };
 
+  // Calculate total capacity
+  const calculateTotalCapacity = (numberOfRooms, roomCapacity) => {
+    return numberOfRooms * roomCapacity;
+  };
+
+  // Calculate corporate discount
+  const calculateCorporateDiscount = (guests) => {
+    if (guests >= 10) return 0.30;
+    if (guests >= 5) return 0.25;
+    if (guests >= 3) return 0.15;
+    return 0;
+  };
+
+  // Add a new function to handle guest changes
+  const handleGuestChange = (newGuestCount) => {
+    const guests = parseInt(newGuestCount);
+    setFormData(prev => ({ ...prev, guests }));
+    
+    // Recalculate total price with new guest count
+    const subtotal = room.currentPrice * nights * numberOfRooms;
+    const discount = calculateCorporateDiscount(guests);
+    const newTotal = subtotal * (1 - discount);
+    setTotalPrice(newTotal);
+  };
+
   // If no room data is passed, redirect to home
-  if (!room || !formData) {
+  if (!room || !initialFormData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -267,6 +320,13 @@ const BookingConfirmation = () => {
                       <p className="text-gray-500 text-sm mt-1">₹{totalPrice}</p>
                       <div className="mt-2 flex items-center text-sm text-gray-500">
                         <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {formData.location}
+                      </div>
+                      <div className="mt-2 flex items-center text-sm text-gray-500">
+                        <svg className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                         {formData.guests} Guest{formData.guests !== 1 ? 's' : ''}
@@ -288,13 +348,13 @@ const BookingConfirmation = () => {
                       <svg className="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                       </svg>
-                      <span className="text-gray-500">{personalInfo.email}</span>
+                      <span className="text-gray-500">{formData.email}</span>
                     </div>
                     <div className="flex items-center text-sm">
                       <svg className="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
-                      <span className="text-gray-500">{personalInfo.phone}</span>
+                      <span className="text-gray-500">{formData.phone}</span>
                     </div>
                     <div className="flex items-start text-sm">
                       <svg className="h-4 w-4 mr-2 text-gray-400 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -302,7 +362,7 @@ const BookingConfirmation = () => {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       <span className="text-gray-500">
-                        {personalInfo.address}, {personalInfo.city}, {personalInfo.country} {personalInfo.zipCode}
+                        {formData.address}, {formData.city}, {formData.country} {formData.zipCode}
                       </span>
                     </div>
                   </div>
@@ -320,8 +380,8 @@ const BookingConfirmation = () => {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-500">Payment Method</span>
                       <span className="font-medium text-gray-900">
-                        {personalInfo.paymentMethod === 'credit_card' ? 'Credit Card' : 
-                         personalInfo.paymentMethod === 'paypal' ? 'PayPal' : 'Bank Transfer'}
+                        {formData.paymentMethod === 'credit_card' ? 'Credit Card' : 
+                         formData.paymentMethod === 'paypal' ? 'PayPal' : 'Bank Transfer'}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -432,6 +492,12 @@ const BookingConfirmation = () => {
                     </div>
                   </div>
                   
+                  <div className="mt-4 mb-4 text-sm text-gray-600 border-b pb-4">
+                    <div className="font-medium">Luxe Resorts {room.location}</div>
+                    <div>{HOTEL_ADDRESSES[room.location].street}, {HOTEL_ADDRESSES[room.location].area}</div>
+                    <div>{HOTEL_ADDRESSES[room.location].city}, {HOTEL_ADDRESSES[room.location].state} - {HOTEL_ADDRESSES[room.location].pincode}</div>
+                  </div>
+
                   <dl className="mt-4 space-y-3 text-sm">
                     <div className="flex justify-between">
                       <dt className="text-gray-600">Check-in</dt>
@@ -450,26 +516,75 @@ const BookingConfirmation = () => {
                       <dd className="font-medium text-gray-900">{nights} night{nights !== 1 ? 's' : ''}</dd>
                     </div>
                     
-                    <div className="pt-3 border-t border-gray-200">
-                      <div className="flex justify-between">
-                        <dt className="text-gray-600">₹{room.currentPrice} × {nights} night{nights !== 1 ? 's' : ''}</dt>
-                        <dd className="font-medium text-gray-900">₹{room.currentPrice * nights}</dd>
+                    <div className="mt-6 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Number of Rooms
+                        </label>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            Maximum {room.available} rooms available
+                          </p>
+                          <select
+                            value={numberOfRooms}
+                            onChange={(e) => {
+                              const rooms = parseInt(e.target.value);
+                              setNumberOfRooms(rooms);
+                              // Update maxGuests when rooms change
+                              const newMaxGuests = calculateTotalCapacity(rooms, room.capacity);
+                              setMaxGuests(newMaxGuests);
+                              // Adjust guest count if it exceeds new maximum
+                              if (formData.guests > newMaxGuests) {
+                                setFormData(prev => ({ ...prev, guests: newMaxGuests }));
+                              }
+                            }}
+                            className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                          >
+                            {Array.from({ length: Math.min(5, room.available) }, (_, i) => (
+                              <option key={i + 1} value={i + 1}>{i + 1}</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <div className="flex justify-between mt-2">
-                        <dt className="font-medium text-gray-900">Total</dt>
-                        <dd className="font-medium text-gray-900">
-                          {updatingPrice ? (
-                            <span className="inline-flex items-center">
-                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                              Updating...
-                            </span>
-                          ) : (
-                            <>₹{totalPrice}</>
-                          )}
-                        </dd>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Number of Guests
+                        </label>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            Maximum {maxGuests} guests allowed ({room.capacity} per room)
+                          </p>
+                          <select
+                            value={formData.guests}
+                            onChange={(e) => handleGuestChange(e.target.value)}
+                            className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                          >
+                            {Array.from({ length: maxGuests }, (_, i) => (
+                              <option key={i + 1} value={i + 1}>{i + 1}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Price Breakdown */}
+                      <div className="mt-6 border-t border-gray-200 pt-4">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">₹{room.currentPrice} × {nights} nights × {numberOfRooms} rooms</span>
+                          <span className="font-medium">₹{room.currentPrice * nights * numberOfRooms}</span>
+                        </div>
+                        
+                        {formData.guests >= 3 && (
+                          <div className="flex justify-between text-green-600 mt-2">
+                            <span>Corporate Discount ({(calculateCorporateDiscount(formData.guests) * 100)}%)</span>
+                            <span>-₹{(room.currentPrice * nights * numberOfRooms * calculateCorporateDiscount(formData.guests)).toFixed(2)}</span>
+                          </div>
+                        )}
+
+                        <div className="flex justify-between font-medium text-lg mt-4 border-t border-gray-200 pt-4">
+                          <span>Total</span>
+                          <span>₹{(room.currentPrice * nights * numberOfRooms * (1 - calculateCorporateDiscount(formData.guests))).toFixed(2)}</span>
+                        </div>
                       </div>
                     </div>
                   </dl>
@@ -502,7 +617,7 @@ const BookingConfirmation = () => {
                         type="text"
                         name="fullName"
                         id="fullName"
-                        value={personalInfo.fullName}
+                        value={formData.guestName}
                         onChange={handleInputChange}
                         required
                         className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -520,7 +635,7 @@ const BookingConfirmation = () => {
                           type="email"
                           name="email"
                           id="email"
-                          value={personalInfo.email}
+                          value={formData.email}
                           onChange={handleInputChange}
                           required
                           className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -536,7 +651,7 @@ const BookingConfirmation = () => {
                           type="tel"
                           name="phone"
                           id="phone"
-                          value={personalInfo.phone}
+                          value={formData.phone}
                           onChange={handleInputChange}
                           required
                           className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -554,7 +669,7 @@ const BookingConfirmation = () => {
                         type="text"
                         name="address"
                         id="address"
-                        value={personalInfo.address}
+                        value={formData.address}
                         onChange={handleInputChange}
                         required
                         className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -572,7 +687,7 @@ const BookingConfirmation = () => {
                           type="text"
                           name="city"
                           id="city"
-                          value={personalInfo.city}
+                          value={formData.city}
                           onChange={handleInputChange}
                           required
                           className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -588,7 +703,7 @@ const BookingConfirmation = () => {
                           type="text"
                           name="country"
                           id="country"
-                          value={personalInfo.country}
+                          value={formData.country}
                           onChange={handleInputChange}
                           required
                           className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -604,7 +719,7 @@ const BookingConfirmation = () => {
                           type="text"
                           name="zipCode"
                           id="zipCode"
-                          value={personalInfo.zipCode}
+                          value={formData.zipCode}
                           onChange={handleInputChange}
                           required
                           className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -622,7 +737,7 @@ const BookingConfirmation = () => {
                         name="specialRequests"
                         id="specialRequests"
                         rows="4"
-                        value={personalInfo.specialRequests}
+                        value={formData.specialRequests}
                         onChange={handleInputChange}
                         className="block w-full px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Let us know if you have any special requests..."
@@ -649,14 +764,14 @@ const BookingConfirmation = () => {
                             name="paymentMethod"
                             type="radio"
                             value="credit_card"
-                            checked={personalInfo.paymentMethod === 'credit_card'}
+                            checked={formData.paymentMethod === 'credit_card'}
                             onChange={handleInputChange}
                             className="sr-only"
                           />
                           <label
                             htmlFor="credit_card"
                             className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                              personalInfo.paymentMethod === 'credit_card'
+                              formData.paymentMethod === 'credit_card'
                                 ? 'border-blue-500 bg-blue-50'
                                 : 'border-gray-200 hover:border-blue-200'
                             }`}
@@ -674,14 +789,14 @@ const BookingConfirmation = () => {
                             name="paymentMethod"
                             type="radio"
                             value="paypal"
-                            checked={personalInfo.paymentMethod === 'paypal'}
+                            checked={formData.paymentMethod === 'paypal'}
                             onChange={handleInputChange}
                             className="sr-only"
                           />
                           <label
                             htmlFor="paypal"
                             className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                              personalInfo.paymentMethod === 'paypal'
+                              formData.paymentMethod === 'paypal'
                                 ? 'border-blue-500 bg-blue-50'
                                 : 'border-gray-200 hover:border-blue-200'
                             }`}
@@ -699,14 +814,14 @@ const BookingConfirmation = () => {
                             name="paymentMethod"
                             type="radio"
                             value="bank_transfer"
-                            checked={personalInfo.paymentMethod === 'bank_transfer'}
+                            checked={formData.paymentMethod === 'bank_transfer'}
                             onChange={handleInputChange}
                             className="sr-only"
                           />
                           <label
                             htmlFor="bank_transfer"
                             className={`flex flex-col items-center justify-center p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                              personalInfo.paymentMethod === 'bank_transfer'
+                              formData.paymentMethod === 'bank_transfer'
                                 ? 'border-blue-500 bg-blue-50'
                                 : 'border-gray-200 hover:border-blue-200'
                             }`}
@@ -720,7 +835,7 @@ const BookingConfirmation = () => {
                       </div>
                     </div>
                     
-                    {personalInfo.paymentMethod === 'credit_card' && (
+                    {formData.paymentMethod === 'credit_card' && (
                       <div className="grid grid-cols-6 gap-6 mt-6 p-6 bg-gray-50 rounded-lg">
                         <div className="col-span-6">
                           <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
@@ -729,7 +844,7 @@ const BookingConfirmation = () => {
                             name="cardNumber"
                             id="cardNumber"
                             placeholder="1234 5678 9012 3456"
-                            value={personalInfo.cardNumber}
+                            value={formData.cardNumber}
                             onChange={handleInputChange}
                             required
                             className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
@@ -742,7 +857,7 @@ const BookingConfirmation = () => {
                             type="text"
                             name="cardName"
                             id="cardName"
-                            value={personalInfo.cardName}
+                            value={formData.cardName}
                             onChange={handleInputChange}
                             required
                             className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
@@ -757,7 +872,7 @@ const BookingConfirmation = () => {
                             name="expiryDate"
                             id="expiryDate"
                             placeholder="MM/YY"
-                            value={personalInfo.expiryDate}
+                            value={formData.expiryDate}
                             onChange={handleInputChange}
                             required
                             className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"
@@ -771,7 +886,7 @@ const BookingConfirmation = () => {
                             name="cvv"
                             id="cvv"
                             placeholder="123"
-                            value={personalInfo.cvv}
+                            value={formData.cvv}
                             onChange={handleInputChange}
                             required
                             className="block w-full px-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out"

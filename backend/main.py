@@ -104,6 +104,7 @@ class Booking(BaseModel):
     check_in: str
     check_out: str
     guests: int
+    number_of_rooms: int
     price_per_night: float
     total_price: float
     guest_details: Optional[GuestDetails] = None
@@ -257,16 +258,22 @@ async def root():
 async def get_rooms(
     check_in: str = None,
     check_out: str = None,
+    location: str = None,
     db=Depends(get_db)
 ):
-    """Get all rooms with dynamic availability based on date range"""
+    """Get all rooms with dynamic availability based on date range and location"""
     try:
+        # First check if rooms exist
         rooms = await db.rooms.find().to_list(length=None)
         
+        # Initialize rooms if none exist
         if not rooms:
-            default_rooms = [
+            locations = ["Madurai", "Hyderabad", "Bangalore"]
+            default_rooms = []
+            
+            base_rooms = [
                 {
-                    "room_id": 1,
+                    "room_id": 1,  # Standard Single
                     "type": "Standard Single",
                     "base_price": 2499,
                     "total_rooms": 5,
@@ -276,7 +283,7 @@ async def get_rooms(
                     "image_url": "https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3"
                 },
                 {
-                    "room_id": 2,
+                    "room_id": 2,  # Standard Double
                     "type": "Standard Double",
                     "base_price": 3999,
                     "total_rooms": 8,
@@ -286,7 +293,7 @@ async def get_rooms(
                     "image_url": "https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3"
                 },
                 {
-                    "room_id": 3,
+                    "room_id": 3,  # Deluxe
                     "type": "Deluxe",
                     "base_price": 5599,
                     "total_rooms": 4,
@@ -296,7 +303,7 @@ async def get_rooms(
                     "image_url": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?ixlib=rb-4.0.3"
                 },
                 {
-                    "room_id": 4,
+                    "room_id": 4,  # Suite
                     "type": "Suite",
                     "base_price": 7499,
                     "total_rooms": 2,
@@ -306,7 +313,7 @@ async def get_rooms(
                     "image_url": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-4.0.3"
                 },
                 {
-                    "room_id": 5,
+                    "room_id": 5,  # Presidential Suite
                     "type": "Presidential Suite",
                     "base_price": 14599,
                     "total_rooms": 1,
@@ -317,28 +324,51 @@ async def get_rooms(
                 }
             ]
             
-            # Drop existing rooms collection and create new one
-            await db.rooms.drop()
+            # Create room entries for each location
+            for location in locations:
+                for room in base_rooms:
+                    room_with_location = {
+                        **room,  # Spread the base room properties
+                        "location": location  # Add location
+                    }
+                    default_rooms.append(room_with_location)
+            
+            # Insert the default rooms
             await db.rooms.insert_many(default_rooms)
             rooms = default_rooms
 
+        # Apply location filter only if location is provided and not empty
+        if location and location.strip():
+            rooms = [room for room in rooms if room.get('location') == location]
+
         # If date range is provided, calculate availability
         if check_in and check_out:
-            # Get all bookings that overlap with the date range
-            bookings = await db.bookings.find({
-                "$or": [
+            booking_query = {
+                "$and": [
                     {
-                        "check_in": {"$lte": check_out},
-                        "check_out": {"$gte": check_in}
+                        "$or": [
+                            {
+                                "check_in": {"$lte": check_out},
+                                "check_out": {"$gte": check_in}
+                            }
+                        ]
                     }
                 ]
-            }).to_list(length=None)
+            }
+            
+            # Add location filter to booking query only if location is provided and not empty
+            if location and location.strip():
+                booking_query["$and"].append({"location": location})
+
+            bookings = await db.bookings.find(booking_query).to_list(length=None)
 
             # Calculate availability for each room
             for room in rooms:
                 total_rooms = room.get('total_rooms', 0)
-                # Count bookings for this room type in the date range
-                occupied = sum(1 for booking in bookings if booking['room_id'] == room['room_id'])
+                # Count bookings for this room type in the date range for this location
+                occupied = sum(1 for booking in bookings 
+                             if booking['room_id'] == room['room_id'] 
+                             and booking['location'] == room['location'])
                 room['available'] = total_rooms - occupied
                 room['occupied_count'] = occupied
         else:
@@ -347,12 +377,14 @@ async def get_rooms(
                 room['available'] = room.get('total_rooms', 0)
                 room['occupied_count'] = 0
 
+        # Convert ObjectId to string
         for room in rooms:
             if "_id" in room:
                 room["_id"] = str(room["_id"])
         
         return rooms
     except Exception as e:
+        print(f"Error in get_rooms: {str(e)}")  # Add logging
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/dynamic-pricing", response_model=List[RoomPricing])
@@ -519,45 +551,61 @@ async def get_room_stats(db=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/bookings", status_code=201)
+def calculate_corporate_discount(total_guests):
+    """Calculate corporate discount based on number of guests"""
+    if total_guests >= 10:
+        return 0.30  # 30% discount
+    elif total_guests >= 5:
+        return 0.25  # 25% discount
+    elif total_guests >= 3:
+        return 0.15  # 15% discount
+    return 0
+
+@app.post("/api/bookings")
 async def create_booking(booking: Booking, db=Depends(get_db)):
     """Create a new booking"""
     try:
-        # Check if room exists and has availability for the requested dates
-        room = await db.rooms.find_one({"room_id": booking.room_id})
+        booking_data = booking.dict()
+        
+        # Get the room details
+        room = await db.rooms.find_one({"room_id": booking_data["room_id"]})
         if not room:
-            raise HTTPException(status_code=404, detail=f"Room with ID {booking.room_id} not found")
+            raise HTTPException(status_code=404, detail="Room not found")
+
+        # Calculate total guests based on number of rooms and room capacity
+        total_guests = booking_data["number_of_rooms"] * room["capacity"]
         
-        # Check availability for the requested dates
-        overlapping_bookings = await db.bookings.count_documents({
-            "room_id": booking.room_id,
-            "check_in": {"$lte": booking.check_out},
-            "check_out": {"$gte": booking.check_in}
-        })
+        # Validate against room capacity
+        if booking_data["guests"] > total_guests:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Maximum {room['capacity']} guests allowed per room. Total capacity for {booking_data['number_of_rooms']} rooms is {total_guests}"
+            )
+
+        # Calculate corporate discount
+        discount_percentage = calculate_corporate_discount(booking_data["guests"])
+        if discount_percentage > 0:
+            original_total = booking_data["total_price"]
+            booking_data["discount"] = {
+                "type": "corporate",
+                "percentage": discount_percentage * 100,
+                "amount": original_total * discount_percentage
+            }
+            booking_data["total_price"] = original_total * (1 - discount_percentage)
+
+        # Add location to booking data
+        booking_data["location"] = room["location"]
         
-        if overlapping_bookings >= room.get('total_rooms', 0):
-            raise HTTPException(status_code=400, detail="Room is not available for the selected dates")
+        result = await db.bookings.insert_one(booking_data)
         
-        # Create booking record
-        booking_record = booking.dict()
-        booking_record["created_at"] = datetime.now().isoformat()
+        if booking_data.get("guest_details", {}).get("email"):
+            await send_booking_confirmation_email(booking_data, room)
         
-        # Insert booking
-        result = await db.bookings.insert_one(booking_record)
-        
-        # Send confirmation email
-        email_sent = await send_booking_confirmation_email(booking_record, room)
-        
-        return {
-            "id": str(result.inserted_id), 
-            "message": "Booking confirmed",
-            "email_sent": email_sent
-        }
-    
+        return {"message": "Booking created successfully", "booking_id": str(result.inserted_id)}
     except HTTPException as he:
         raise he
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating booking: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/bookings", response_model=List[dict])
 async def get_bookings(db=Depends(get_db)):
