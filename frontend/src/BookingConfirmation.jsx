@@ -141,7 +141,7 @@ const BookingConfirmation = () => {
         }
       };
 
-      const response = await axios.post('http://localhost:8000/api/bookings', bookingData);
+      const response = await axios.post('https://dynamic-pricing-engine-bknd.onrender.com/api/bookings', bookingData);
       setBookingId(response.data.id);
       setBookingComplete(true);
       setLoading(false);

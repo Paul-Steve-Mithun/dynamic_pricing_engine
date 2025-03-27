@@ -1,0 +1,1 @@
+export const API_BASE_URL = 'https://dynamic-pricing-engine-bknd.onrender.com'; 
